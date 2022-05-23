@@ -1,0 +1,205 @@
+Reads user input and compare to available airlines
+------------------------------------------------------------------------------------
+<?php include("top.php") ?>
+<div>
+
+	<?php
+		
+		$username = $_GET["username"];
+		$SP = $_GET["startingpoint"];
+		$DES = $_GET["destination"];
+		$Leave = $_GET["leave"];
+		$Return = $_GET["return"];
+		$lines = file("flights.txt",FILE_IGNORE_NEW_LINES);
+		$price = rand(150,300);
+		$c=",";
+		$reservation = "\nFLIGHT,".$username.$c.$SP.$c.$DES.$c.$Leave.$c.$Return.$c.$price;
+		file_put_contents("reservations.txt",$reservation,FILE_APPEND);
+	?>
+	<h1>Thank You!</h1>
+	<h2>Enjoy your savings!</h2>
+	<p><a href="confirmation.php?username=<?=$username?>">See your receipt</a></p>
+
+</div>
+<?php include("bottom.html")?>
+
+
+
+----------------------------------------------------------------------------------------
+Confirmation.php
+
+
+<?php include("top.php") ?>
+<div>
+	<?php
+	//Get username, pushed from previous page.
+		$username=$_GET["username"];
+		
+		//Find name of user using username
+		$lines = file("users.txt",FILE_IGNORE_NEW_LINES);
+		$name= "";
+		foreach($lines as $line){
+			$words=explode(",",$line);
+			if($words[1]==$username){
+				$name=$words[0];
+				break;
+			}
+		}
+		//Find all reservations, stored in reservations()
+		$lines = file("reservations.txt",FILE_IGNORE_NEW_LINES);
+		$reservations=array();
+		foreach($lines as $line){
+			$words=explode(",",$line);
+			if($words[1]==$username){
+				array_push($reservations, implode(",",$words));
+			}
+		}
+	?>
+	
+	<h1>Thank you for your business, <?=$name?></h1>
+	<h2>Enjoy your savings!</h2>
+	
+	<div class="receipt">
+	
+	
+		<h1>Receipt:</h1>
+		<?php
+			
+			$count = count($reservations);
+			$words=explode(",",$reservations[$count-1]);
+			
+			
+			if($words[0]=="HOTEL"){ 
+				
+					$lines = file("hotels.txt",FILE_IGNORE_NEW_LINES);
+					$current="";
+					foreach($lines as $line){
+						$werds = explode(",",$line);
+						if($werds[0]==$words[2]){
+							$current=$werds[1];
+							break;
+						}
+					}				
+				?>
+				<div class="reservation">
+					
+					<p>
+						<img src="hotel_img.png" width="50" height="50"/>
+						<?=  $current ?>
+					</p>
+					<ul>
+						<li>
+						<strong>Location:</strong><?=$words[2]?>
+						</li>
+						<li>
+						<strong>Number of Patrons:</strong><?=$words[3]?>
+						</li>
+						<li>
+						<strong>Check In:</strong><?=$words[4]?>
+						</li>
+						<li>
+						<strong>Check Out:</strong><?=$words[5]?>
+						</li>
+						<li>
+						<strong>Amount Due:$</strong><?=$words[6]?>
+						</li>
+					</ul>
+				</div>
+				<?php
+				}
+				else if($words[0]=="CAR"){
+					$lines = file("cars.txt",FILE_IGNORE_NEW_LINES);
+					$current="";
+					$carmodel="";
+					foreach($lines as $line){
+						$werds = explode(",",$line);
+						if($werds[0]==$words[2]){
+							$carmodel=$werds[1];
+							$current=$werds[2];
+							break;
+						}
+					}				
+				?>
+				<div class="reservation">
+					
+					<p>
+						<img src="car_img.png" width="50" height="50"/>
+						<?=  $current ?>
+					</p>
+					<ul>
+						<li>
+						<strong>Car Model:</strong><?=$carmodel?>
+						</li>
+						<li>
+						<strong>Location:</strong><?=$words[2]?>
+						</li>
+						<li>
+						<strong>License ID:</strong><?=$words[3]?>
+						</li>
+						<li>
+						<strong>Pick Up Date:</strong><?=$words[4]?>\
+						</li>
+						<li>
+						<strong>Length of Rental:</strong><?=$words[5]?>
+						</li>
+						<li>
+						<strong>Price:$</strong><?=$words[6]?>
+						</li>
+					</ul>
+				</div>
+				<?php
+				}
+				else if($words[0]="FLIGHT"){
+					$lines = file("flights.txt",FILE_IGNORE_NEW_LINES);
+					$current="";
+					$fin="";
+					$foe="";
+					foreach($lines as $line){
+						$werds = explode(",",$line);
+						if($werds[0]==$words[2]){
+							
+							$foe=$werds[2];
+							$fin=$werds[3];
+							$current=$werds[1];
+							break;
+						}
+					}				
+				?>
+				<div class="reservation">
+					
+					<p>
+						<img src="airplane_img.png" width="50" height="50"/>
+						<?=  $current ?>
+					</p>
+					<ul>
+						<li>
+						<strong>Location:</strong><?=$words[2]?>
+						</li>
+						<li>
+						<strong>Destination:</strong><?=$words[3]?>
+						</li>
+						<li>
+						<strong>Date To:</strong><?=$words[4]?>
+						</li>
+						<li>
+						<strong>Date From:</strong><?=$words[5]?>
+						</li>
+						<li>
+						<strong>Hours of Operation</strong><?=$foe?> to <?=$fin?>
+						<li>
+						<strong>Price:$</strong><?=$words[6]?>
+						</li>
+						
+					</ul>
+				</div>
+				<?php
+				}
+		
+		?>
+	
+	</div>
+
+
+</div>
+
+<?php include("bottom.html") ?>
